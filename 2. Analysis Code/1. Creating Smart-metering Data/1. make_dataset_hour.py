@@ -63,9 +63,9 @@ def get_value_on_use_df():
     root = get_project_root() # 루트
     user_name = get_name_root() # 사용자명
 
-    # 태양광 사용 가구 리스트('윤정자' 제외)
-    solar_use = ['오여주', '박순선', '이희숙', '유연숙', '임미순', '김풍옥', '이미자', '최영해', '오미옥', '최차복', '김소라',
-                 '고영호', '송순단', '이재철(김정겸)', '변순덕', '서구자', '민연순', '조완숙', '임명란']
+    # 태양광 사용 가구 리스트('윤OO' 제외)
+    solar_use = ['오OO', '박OO', '이OO', '유OO', '임OO', '김OO', '이OO', '최OO', '오OO', '최OO', '김OO',
+                 '고OO', '송OO', '이OO', '변OO', '서OO', '민OO', '조OO', '임OO']
 
     for i in range(len(user_name)):
 
@@ -84,7 +84,7 @@ def get_value_on_use_df():
         data_time['import'] = []  # 수전량
         update = 0
 
-        if user_name[i] == '윤정자': # 윤정자 data는 변수명이 다르므로 본 코드에서는 생략함.
+        if user_name[i] == '윤OO': # 윤OO data는 변수명이 다르므로 본 코드에서는 생략함.
             continue
 
         if user_name[i] not in solar_use:
@@ -196,9 +196,9 @@ def get_value_on_not_df():
     root = get_project_root() # 루트
     user_name = get_name_root() # 사용자명
 
-    # 태양광 사용 가구 리스트('윤정자' 제외)
-    solar_use = ['오여주', '박순선', '이희숙', '유연숙', '임미순', '김풍옥', '이미자', '최영해', '오미옥', '최차복', '김소라',
-                 '고영호', '송순단', '이재철(김정겸)', '변순덕', '서구자', '민연순', '조완숙', '임명란']
+    # 태양광 사용 가구 리스트('윤OO' 제외)
+    solar_use = ['오OO', '박OO', '이OO', '유OO', '임OO', '김OO', '이OO', '최OO', '오OO', '최OO', '김OO',
+                 '고OO', '송OO', '이OO', '변OO', '서OO', '민OO', '조OO', '임OO']
 
     for i in range(len(user_name)):
 
@@ -217,7 +217,7 @@ def get_value_on_not_df():
         data_time['import'] = []  # 수전량
         update = 0
 
-        if user_name[i] == '윤정자': # 윤정자 data는 변수명이 다르므로 본 코드에서는 생략함.
+        if user_name[i] == '윤OO': # 윤OO data는 변수명이 다르므로 본 코드에서는 생략함.
             continue
 
         if user_name[i] in solar_use:
@@ -346,19 +346,19 @@ def get_value_on_not_df():
     return
 
 # 6-3. 사용자 이름 폴더 안에 파일 하나씩 적용 - 최종 데이터프레임에 값 채우기
-# 태양광 사용 가구 중 special case - '윤정자'
+# 태양광 사용 가구 중 special case - '윤OO'
 # 2021-08-08까지 변수 '에너지 수율' -> 태양광 발전, 변수 '부하 에너지' -> 그리드 소비를 의미함.
 # 2021-08-09부터는 다른 data와 마찬가지로 형태가 동일하므로 코드 그대로 적용 가능.
 def get_value_on_use_df_special():
     root = get_project_root() # 루트
     user_name = get_name_root() # 사용자명
 
-    # 태양광 사용 가구 리스트('윤정자' 제외)
-    # solar_use = ['오여주', '박순선', '이희숙', '유연숙', '임미순', '김풍옥', '이미자', '최영해', '오미옥', '최차복', '김소라',
-    #              '고영호', '송순단', '이재철(김정겸)', '변순덕', '서구자', '민연순', '조완숙', '임명란']
+    # 태양광 사용 가구 리스트('윤OO' 제외)
+    # solar_use = ['오OO', '박OO', '이OO', '유OO', '임OO', '김OO', '이OO', '최OO', '오OO', '최OO', '김OO',
+    #              '고OO', '송OO', '이OO', '변OO', '서OO', '민OO', '조OO', '임OO']
 
-    # 태양광 사용 가구 special case : 윤정자
-    solar_use_special = ['윤정자']
+    # 태양광 사용 가구 special case : 윤OO
+    solar_use_special = ['윤OO']
 
     for i in range(len(user_name)):
 
@@ -377,7 +377,7 @@ def get_value_on_use_df_special():
         data_time['import'] = []  # 수전량
         update = 0
 
-        if user_name[i] != '윤정자': # 윤정자 data가 아니면 본 코드 생략.
+        if user_name[i] != '윤OO': # 윤OO data가 아니면 본 코드 생략.
             continue
 
         print(f'{user_name[i]} 태양광 사용 가구 dataset 생성 시작')
