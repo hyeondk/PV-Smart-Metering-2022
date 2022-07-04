@@ -1,6 +1,6 @@
 ### Code : 스마트미터링 자료 시, 일, 월 단위 생성 - 시간 / weather data + 가구에너지패널조사 data merge
 ### Writer : Donghyeon Kim
-### Date : 2022.07.01 ~ 2022.07.02
+### Date : 2022.07.02
 
 # 0. 라이브러리 실행
 from pathlib import Path
