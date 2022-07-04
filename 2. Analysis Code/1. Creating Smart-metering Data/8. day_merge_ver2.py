@@ -1,4 +1,4 @@
-### Code : 스마트미터링 자료 시, 일, 월 단위 생성 - 일 / weather data + 가구에너지패널조사 data merge
+### Code : 스마트미터링 자료 시, 일, 월 단위 생성 - 일 / weather data + 가구에너지패널조사 data merge version2
 ### Writer : Donghyeon Kim
 ### Date : 2022.07.04
 
