@@ -1,6 +1,6 @@
 ### Code : 스마트미터링 자료 시, 일, 월 단위 생성 - 일 / weather data + 가구에너지패널조사 data merge
 ### Writer : Donghyeon Kim
-### Date : 2022.07.03 ~ 2022.07.04
+### Date : 2022.07.04
 
 # 0. 라이브러리 실행
 from pathlib import Path
@@ -116,7 +116,6 @@ def weather_data_day_mean():
 def dataset_weather_merge():
     root = get_project_root()
     folder_root = os.path.join(root, 'result_by_user') # 파일 1(스마트미터링 자료) 호출을 위한 루트
-    file_name = os.listdir(folder_root)
     user_name = get_name_root()
 
     # 파일 2 : weather data

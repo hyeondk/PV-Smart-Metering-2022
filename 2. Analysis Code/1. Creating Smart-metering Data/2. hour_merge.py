@@ -24,7 +24,6 @@ def get_name_root():
 def dataset_weather_merge():
     root = get_project_root()
     folder_root = os.path.join(root, 'result_by_user') # 파일 1(스마트미터링 자료) 호출을 위한 루트
-    file_name = os.listdir(folder_root)
     user_name = get_name_root()
 
     # 파일 2 : weather data

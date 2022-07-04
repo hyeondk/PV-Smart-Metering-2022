@@ -2,6 +2,8 @@
 ### Writer : Donghyeon Kim
 ### Date : 2022.07.03
 
+## 방법론 : hour_data에서 각 일별로 consumption, import, production, export 합쳐서 계산
+
 # 0. 라이브러리 실행
 from pathlib import Path
 import os
