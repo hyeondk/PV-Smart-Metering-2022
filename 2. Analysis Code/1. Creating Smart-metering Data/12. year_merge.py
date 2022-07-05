@@ -21,7 +21,7 @@ def get_name_root():
     return user_name
 
 # 3. weather data 연단위 평균값 계산
-def weather_data_month_mean():
+def weather_data_year_mean():
     root = get_project_root()
     user_name = get_name_root()
     weather_folder_root = os.path.join(root, 'data_weather')
@@ -106,7 +106,7 @@ def dataset_weather_merge():
 
     # 파일 2 : weather data
     # 모든 사용자에 대한 정보를 다 가지고 있으므로, 1번만 호출하면 됨.
-    df2 = weather_data_month_mean()
+    df2 = weather_data_year_mean()
 
     for i in range(len(user_name)):
         print(f'{user_name[i]} dataset과 weather data와의 merge 시작')
