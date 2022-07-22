@@ -1,4 +1,4 @@
-### Code : 데이터 Interpolation(분 단위)
+### Code : Rawdata Interpolation(분 단위)
 ### Writer : Donghyeon Kim
 ### Date : 2022.07.11
 
@@ -8,9 +8,13 @@
 # 총 가구수 : 53가구
 
 ## 방법론 ##
-# 해당 날짜에 0:00부터 23:59분까지 60분 X 24시간 = 1,440개의 행이 모두 존재한다 -> 완전한 데이터로 취급 / 이 외에는 불완전한 데이터로 취급
-# 완전한 데이터 -> linear interpolation method를 활용하여 보정 진행(단, 앞부분과 뒷부분이 보정은 생략)
+# 해당 날짜에 0:00부터 23:59분까지 60분 X 24시간 = 1,440개의 행이 모두 존재한다 -> 완전한 데이터로 취급 / 이 외에는 불완전한 데이터로 취급.
+# 완전한 데이터 -> linear interpolation method를 활용하여 보정 진행(단, 앞부분과 뒷부분 보정은 생략. 이는 모델을 통해 보정 예정.)
 # 불완전한 데이터 -> interpolation 생략
+
+## 참고 사항 ##
+# 기존 data가 '.xls' 형태로 저장되어 있어 같은 형태로 저장하고자 함.
+# 오류는 'FutureWarning'이므로, 실행하는데는 문제가 없음. 다만, 추후 본 코드를 활용하고자 할 경우에는 확장자를 '.xlsx'로 변경할 필요는 있음.
 
 # 0. 라이브러리 실행
 from pathlib import Path
@@ -18,6 +22,7 @@ import os
 import pandas as pd
 import numpy as np
 import openpyxl
+import xlwt
 from datetime import datetime, date
 
 # 1. 파일의 상위-상위 경로 설정
@@ -55,13 +60,13 @@ def get_value_on_use_df():
     root = get_project_root() # 루트
     user_name = get_name_root() # 사용자명
 
-    # 태양광 사용 가구 리스트('윤정자' 제외)
-    solar_use = ['오여주', '박순선', '이희숙', '유연숙', '임미순', '김풍옥', '이미자', '최영해', '오미옥', '최차복', '김소라',
-                 '고영호', '송순단', '이재철(김정겸)', '변순덕', '서구자', '민연순', '조완숙', '임명란']
+    # 태양광 사용 가구 리스트('윤OO' 제외)
+    solar_use = ['오OO', '박OO', '이OO', '유OO', '임OO', '김OO', '이OO', '최OO', '오OO', '최OO', '김OO',
+                 '고OO', '송OO', '이OO', '변OO', '서OO', '민OO', '조OO', '임OO']
 
     for i in range(len(user_name)):
 
-        if user_name[i] == '윤정자': # 윤정자 data는 변수명이 다르므로 본 코드를 실행하지 않음.
+        if user_name[i] == '윤OO': # 윤OO data는 변수명이 다르므로 본 코드를 실행하지 않음.
             continue
 
         if user_name[i] not in solar_use: # 태양광 미사용 가구 데이터는 본 코드를 실행하지 않음.
@@ -115,7 +120,7 @@ def get_value_on_use_df():
                 rawdata['수출 된 에너지(kWh)'] = rawdata['수출 된 에너지(kWh)'].fillna(rawdata['수출 된 에너지(kWh)'].interpolate())
                 rawdata['에너지 수율(kWh)'] = rawdata['에너지 수율(kWh)'].fillna(rawdata['에너지 수율(kWh)'].interpolate())
 
-                df_root = os.path.join(root, 'data_revised')
+                df_root = os.path.join(root, 'data_revised_use')
                 if not os.path.isdir(df_root):
                     os.makedirs(df_root)
 
@@ -123,8 +128,8 @@ def get_value_on_use_df():
                 if not os.path.isdir(df_root_user):
                     os.makedirs(df_root_user)
 
-                xlsx_name = df_root_user + '\\' + date_val.replace('/', '-') + '.xlsx'
-                rawdata.to_excel(xlsx_name, sheet_name='revised', index=False)
+                xls_name = df_root_user + '\\' + file_name
+                rawdata.to_excel(xls_name, sheet_name='revised', index=False)
 
         print(f'{user_name[i]} 태양광 사용 가구 dataset 보정 완료')
 
@@ -137,13 +142,13 @@ def get_value_on_not_df():
     root = get_project_root() # 루트
     user_name = get_name_root() # 사용자명
 
-    # 태양광 사용 가구 리스트('윤정자' 제외)
-    solar_use = ['오여주', '박순선', '이희숙', '유연숙', '임미순', '김풍옥', '이미자', '최영해', '오미옥', '최차복', '김소라',
-                 '고영호', '송순단', '이재철(김정겸)', '변순덕', '서구자', '민연순', '조완숙', '임명란']
+    # 태양광 사용 가구 리스트('윤OO' 제외)
+    solar_use = ['오OO', '박OO', '이OO', '유OO', '임OO', '김OO', '이OO', '최OO', '오OO', '최OO', '김OO',
+                 '고OO', '송OO', '이OO', '변OO', '서OO', '민OO', '조OO', '임OO']
 
     for i in range(len(user_name)):
 
-        if user_name[i] == '윤정자': # 윤정자 data는 변수명이 다르므로 본 코드를 실행하지 않음.
+        if user_name[i] == '윤OO': # 윤OO data는 변수명이 다르므로 본 코드를 실행하지 않음.
             continue
 
         if user_name[i] in solar_use: # 태양광 사용 가구 데이터는 본 코드를 실행하지 않음.
@@ -197,7 +202,7 @@ def get_value_on_not_df():
                 rawdata['수출 된 에너지(kWh)'] = rawdata['수출 된 에너지(kWh)'].fillna(rawdata['수출 된 에너지(kWh)'].interpolate())
                 # rawdata['에너지 수율(kWh)'] = rawdata['에너지 수율(kWh)'].fillna(rawdata['에너지 수율(kWh)'].interpolate())
 
-                df_root = os.path.join(root, 'data_revised')
+                df_root = os.path.join(root, 'data_revised_not')
                 if not os.path.isdir(df_root):
                     os.makedirs(df_root)
 
@@ -205,8 +210,8 @@ def get_value_on_not_df():
                 if not os.path.isdir(df_root_user):
                     os.makedirs(df_root_user)
 
-                xlsx_name = df_root_user + '\\' + date_val.replace('/', '-') + '.xlsx'
-                rawdata.to_excel(xlsx_name, sheet_name='revised', index=False)
+                xls_name = df_root_user + '\\' + file_name
+                rawdata.to_excel(xls_name, sheet_name='revised', index=False)
 
         print(f'{user_name[i]} 태양광 미사용 가구 dataset 보정 완료')
 
@@ -214,7 +219,7 @@ def get_value_on_not_df():
     return
 
 # 4-3. 사용자 이름 폴더 안에 파일 하나씩 적용 - NA 값 대체
-# 태양광 사용 가구 중 special case - '윤정자'
+# 태양광 사용 가구 중 special case - '윤OO'
 # 2021-08-08까지 변수 '에너지 수율' -> 태양광 발전, 변수 '부하 에너지' -> 그리드 소비를 의미함.
 # 2021-08-09부터는 다른 data와 마찬가지로 형태가 동일하므로 코드 그대로 적용 가능.
 def get_value_on_use_df_special():
@@ -223,7 +228,7 @@ def get_value_on_use_df_special():
 
     for i in range(len(user_name)):
 
-        if user_name[i] != '윤정자': # 윤정자 data가 아닌 경우 본 코드를 실행하지 않음.
+        if user_name[i] != '윤OO': # 윤OO data가 아닌 경우 본 코드를 실행하지 않음.
             continue
 
         print(f'{user_name[i]} 태양광 사용 가구 dataset 보정 시작')
@@ -245,9 +250,9 @@ def get_value_on_use_df_special():
             rawdata = pd.read_excel(dir_file, header=idx)  # idx로 header 재설정
 
             date_2021_list = makedate()
-            if date_val in date_2021_list:  # 2021 날짜 리스트(2021/1/1 ~ 2021/8/8)에 해당되면 코드 실행
-                rawdata.rename(columns={'Unnamed: 0': 'date'}, inplace=True)  # 컬럼 이름 변경
-                rawdata['date'] = pd.to_datetime(rawdata['date'], format='%Y/%m/%d %H:%M:%S')  # 날짜 포맷 설정
+            if date_val in date_2021_list: # 2021 날짜 리스트(2021/1/1 ~ 2021/8/8)에 해당되면 코드 실행
+                rawdata.rename(columns={'Unnamed: 0': 'date'}, inplace=True) # 컬럼 이름 변경
+                rawdata['date'] = pd.to_datetime(rawdata['date'], format='%Y/%m/%d %H:%M:%S') # 날짜 포맷 설정
                 # rawdata['year'] = rawdata['date'].dt.year
                 # rawdata['month'] = rawdata['date'].dt.month
                 # rawdata['day'] = rawdata['date'].dt.day
@@ -279,7 +284,7 @@ def get_value_on_use_df_special():
                     # rawdata['수출 된 에너지(kWh)'] = rawdata['수출 된 에너지(kWh)'].fillna(rawdata['수출 된 에너지(kWh)'].interpolate())
                     rawdata['에너지 수율(kWh)'] = rawdata['에너지 수율(kWh)'].fillna(rawdata['에너지 수율(kWh)'].interpolate())
 
-                    df_root = os.path.join(root, 'data_revised')
+                    df_root = os.path.join(root, 'data_revised_use')
                     if not os.path.isdir(df_root):
                         os.makedirs(df_root)
 
@@ -287,12 +292,12 @@ def get_value_on_use_df_special():
                     if not os.path.isdir(df_root_user):
                         os.makedirs(df_root_user)
 
-                    xlsx_name = df_root_user + '\\' + date_val.replace('/', '-') + '.xlsx'
-                    rawdata.to_excel(xlsx_name, sheet_name='revised', index=False)
+                    xls_name = df_root_user + '\\' + file_name
+                    rawdata.to_excel(xls_name, sheet_name='revised', index=False)
             else:
-                if date_val in date_2021_list:  # 2021 날짜 리스트(2021/1/1 ~ 2021/8/8)에 해당되면 코드 실행
-                    rawdata.rename(columns={'Unnamed: 0': 'date'}, inplace=True)  # 컬럼 이름 변경
-                    rawdata['date'] = pd.to_datetime(rawdata['date'], format='%Y/%m/%d %H:%M:%S')  # 날짜 포맷 설정
+                if date_val in date_2021_list: # 2021 날짜 리스트(2021/1/1 ~ 2021/8/8)에 해당되면 코드 실행
+                    rawdata.rename(columns={'Unnamed: 0': 'date'}, inplace=True) # 컬럼 이름 변경
+                    rawdata['date'] = pd.to_datetime(rawdata['date'], format='%Y/%m/%d %H:%M:%S') # 날짜 포맷 설정
                     # rawdata['year'] = rawdata['date'].dt.year
                     # rawdata['month'] = rawdata['date'].dt.month
                     # rawdata['day'] = rawdata['date'].dt.day
@@ -325,7 +330,7 @@ def get_value_on_use_df_special():
                         # rawdata['수출 된 에너지(kWh)'] = rawdata['수출 된 에너지(kWh)'].fillna(rawdata['수출 된 에너지(kWh)'].interpolate())
                         rawdata['에너지 수율(kWh)'] = rawdata['에너지 수율(kWh)'].fillna(rawdata['에너지 수율(kWh)'].interpolate())
 
-                        df_root = os.path.join(root, 'data_revised')
+                        df_root = os.path.join(root, 'data_revised_use')
                         if not os.path.isdir(df_root):
                             os.makedirs(df_root)
 
@@ -333,8 +338,8 @@ def get_value_on_use_df_special():
                         if not os.path.isdir(df_root_user):
                             os.makedirs(df_root_user)
 
-                        xlsx_name = df_root_user + '\\' + date_val.replace('/', '-') + '.xlsx'
-                        rawdata.to_excel(xlsx_name, sheet_name='revised', index=False)
+                        xls_name = df_root_user + '\\' + file_name
+                        rawdata.to_excel(xls_name, sheet_name='revised', index=False)
                 else:
                     rawdata.rename(columns={'Unnamed: 0': 'date'}, inplace=True) # 컬럼 이름 변경
                     rawdata['date'] = pd.to_datetime(rawdata['date'], format='%Y/%m/%d %H:%M:%S') # 날짜 포맷 설정
@@ -356,7 +361,7 @@ def get_value_on_use_df_special():
                     rawdata['수출 된 에너지(kWh)'] = rawdata['수출 된 에너지(kWh)'].astype(str)
                     rawdata['에너지 수율(kWh)'] = rawdata['에너지 수율(kWh)'].astype(str)
 
-                    rawdata['그리드 소비(kWh)'] = rawdata['그리드 소비(kWh)'].str.replace(',', '').astype('float32')  # 반점 제거 & 타입 float32로 변경
+                    rawdata['그리드 소비(kWh)'] = rawdata['그리드 소비(kWh)'].str.replace(',', '').astype('float32') # 반점 제거 & 타입 float32로 변경
                     rawdata['수출 된 에너지(kWh)'] = rawdata['수출 된 에너지(kWh)'].str.replace(',', '').astype('float32')
                     rawdata['에너지 수율(kWh)'] = rawdata['에너지 수율(kWh)'].str.replace(',', '').astype('float32')
 
@@ -369,7 +374,7 @@ def get_value_on_use_df_special():
                         rawdata['수출 된 에너지(kWh)'] = rawdata['수출 된 에너지(kWh)'].fillna(rawdata['수출 된 에너지(kWh)'].interpolate())
                         rawdata['에너지 수율(kWh)'] = rawdata['에너지 수율(kWh)'].fillna(rawdata['에너지 수율(kWh)'].interpolate())
 
-                        df_root = os.path.join(root, 'data_revised')
+                        df_root = os.path.join(root, 'data_revised_use')
                         if not os.path.isdir(df_root):
                             os.makedirs(df_root)
 
@@ -377,8 +382,8 @@ def get_value_on_use_df_special():
                         if not os.path.isdir(df_root_user):
                             os.makedirs(df_root_user)
 
-                        xlsx_name = df_root_user + '\\' + date_val.replace('/', '-') + '.xlsx'
-                        rawdata.to_excel(xlsx_name, sheet_name='revised', index=False)
+                        xls_name = df_root_user + '\\' + file_name
+                        rawdata.to_excel(xls_name, sheet_name='revised', index=False)
 
         print(f'{user_name[i]} 태양광 사용 가구 dataset 보정 완료')
 
