@@ -1,6 +1,6 @@
 ### Code : Function Utils
 ### Writer : Donghyeon Kim
-### Date : 2022.08.02
+### Date : 2022.08.06
 
 # 0. 라이브러리 설정
 from pathlib import Path
@@ -400,7 +400,6 @@ def ghi_generation_plot(user):
     plt.savefig(fig_name, dpi=300)
     print(f'{user} 데이터 : 일사량(GHI)-발전량(Solar Power Generation) Scatter Plot 종료')
     return
-
 
 # 9. Scatter Plot : 시간(Hour) - 에너지 소비(Energy Consumption)
 def hour_consumption_plot(user):
