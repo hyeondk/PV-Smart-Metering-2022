@@ -68,7 +68,7 @@ def weather_user_merge(user):
     user_folder_root = os.path.join(root, 'data_revised_hour')
     xlsx_name = user_folder_root + '\\' + f'{user}_dataset_revised_hour.xlsx'
     df_user = pd.read_excel(xlsx_name)
-    df_user_filter = df_user.drop(['date'], axis = 1)
+    df_user_filter = df_user.drop(['date'], axis=1)
 
     # Weather Data 호출
     df_weather = get_weather_data()
@@ -121,9 +121,9 @@ def weather_user_merge(user):
     prec_group = []
     for i in range(len(df_weather_use)):
         if df_weather_use.precipitation[i] == 0:
-            prec_group.append('no')
+            prec_group.append('no rain')
         else:
-            prec_group.append('yes')
+            prec_group.append('rain')
 
     df_weather_use.loc[:, 'status'] = prec_group
     return df_weather_use
@@ -180,28 +180,73 @@ def hour_generation_plot(user):
 
     # 날짜 : 2021/4 ~ 2022/3
     date_list = df_weather_use.ym.unique().tolist()
-    date_list = date_list[1:-1]  # 2021/3, 2022/4 제외
+    date_list = date_list[1:-1] # 2021/3, 2022/4 제외
 
-    fig = plt.figure(figsize=(20, 20))
-    fig.suptitle(f'Scatter Plot between solar power generation and hour for household No.{idx} site',
-                 y=0.92, fontsize=18, fontweight='bold')
+    # 3kW 표준화
+    df_kw_type = df_weather_use.kW_type.unique().tolist()[0]
 
-    color_dict = dict({'no': 'dodgerblue', 'yes': 'red'})
+    if df_kw_type == '300W':
+        df_weather_use.yield_kWh = df_weather_use.yield_kWh * 10
+    elif df_kw_type == '6kW':
+        df_weather_use.yield_kWh = df_weather_use.yield_kWh / 2
+    elif df_kw_type == '18kW':
+        df_weather_use.yield_kWh = df_weather_use.yield_kWh / 6
+
+    sns.set(rc={'figure.figsize':(19, 20)})
+    plt.suptitle(f'Scatter Plot between solar power generation and hour for household No.{idx} site',
+                 y=0.92, fontsize=22, fontweight='bold')
+
+    color_dict = dict({'no rain': 'dodgerblue', 'rain': 'red'})
 
     for i in range(len(date_list)):
         df_weather_use_f = df_weather_use[df_weather_use.ym == date_list[i]]
 
-        if i not in [9, 10, 11]:
+        if i in [1, 2, 4, 5, 7, 8]: # x,y축 label 제거
             ax = plt.subplot(4, 3, i + 1)
-            plt.subplots_adjust(hspace=0.25)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
             plt.xlim(-1.0, 24.0)
-            plt.ylim(-0.2, 3.0)
-            axp = sns.scatterplot(x='hour', y='yield_kWh', hue='status', data=df_weather_use_f, ax=ax,
-                                  palette=color_dict)
-            plt.title(f'{date_list[i]}', fontsize=15)
-            plt.xlabel("Hour", fontsize=13)
-            plt.ylabel("Generation(kWh)", fontsize=13)
-            plt.tick_params('x', labelbottom=False)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='hour', y='yield_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            axp.set(ylabel=None)
+            axp.axes.xaxis.set_ticklabels([])
+            axp.axes.yaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [0, 3, 6]: # x축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-1.0, 24.0)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='hour', y='yield_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            plt.ylabel("Generation(kWh)", fontsize=18)
+            axp.axes.xaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [10, 11]: # y축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-1.0, 24.0)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='hour', y='yield_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("Hour", fontsize=18)
+            axp.set(ylabel=None)
+            axp.axes.yaxis.set_ticklabels([])
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
             list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
@@ -210,14 +255,14 @@ def hour_generation_plot(user):
             ax.legend(handles, labels)
         else:
             ax = plt.subplot(4, 3, i + 1)
-            plt.subplots_adjust(hspace=0.25)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
             plt.xlim(-1.0, 24.0)
-            plt.ylim(-0.2, 3.0)
-            axp = sns.scatterplot(x='hour', y='yield_kWh', hue='status', data=df_weather_use_f, ax=ax,
-                                  palette=color_dict)
-            plt.title(f'{date_list[i]}', fontsize=15)
-            plt.xlabel("Hour", fontsize=13)
-            plt.ylabel("Generation(kWh)", fontsize=13)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='hour', y='yield_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("Hour", fontsize=18)
+            plt.ylabel("Generation(kWh)", fontsize=18)
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
             list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
@@ -253,28 +298,73 @@ def ghi_generation_plot(user):
 
     # 날짜 : 2021/4 ~ 2022/3
     date_list = df_weather_use.ym.unique().tolist()
-    date_list = date_list[1:-1]  # 2021/3, 2022/4 제외
+    date_list = date_list[1:-1] # 2021/3, 2022/4 제외
 
-    fig = plt.figure(figsize=(20, 20))
-    fig.suptitle(f'Scatter Plot between solar power generation and GHI for household No.{idx} site',
-                 y=0.92, fontsize=18, fontweight='bold')
+    # 3kW 표준화
+    df_kw_type = df_weather_use.kW_type.unique().tolist()[0]
 
-    color_dict = dict({'no': 'dodgerblue', 'yes': 'red'})
+    if df_kw_type == '300W':
+        df_weather_use.yield_kWh = df_weather_use.yield_kWh * 10
+    elif df_kw_type == '6kW':
+        df_weather_use.yield_kWh = df_weather_use.yield_kWh / 2
+    elif df_kw_type == '18kW':
+        df_weather_use.yield_kWh = df_weather_use.yield_kWh / 6
+
+    sns.set(rc={'figure.figsize':(19, 20)})
+    plt.suptitle(f'Scatter Plot between solar power generation and GHI for household No.{idx} site',
+                 y=0.92, fontsize=22, fontweight='bold')
+
+    color_dict = dict({'no rain': 'dodgerblue', 'rain': 'red'})
 
     for i in range(len(date_list)):
         df_weather_use_f = df_weather_use[df_weather_use.ym == date_list[i]]
 
-        if i not in [9, 10, 11]:
+        if i in [1, 2, 4, 5, 7, 8]: # x,y축 label 제거
             ax = plt.subplot(4, 3, i + 1)
-            plt.subplots_adjust(hspace=0.25)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
             plt.xlim(-20.0, 900.0)
-            plt.ylim(-0.2, 3.0)
-            axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_weather_use_f, ax=ax,
-                                  palette=color_dict)
-            plt.title(f'{date_list[i]}', fontsize=15)
-            plt.xlabel("GHI(W/m^2)", fontsize=13)
-            plt.ylabel("Generation(kWh)", fontsize=13)
-            plt.tick_params('x', labelbottom=False)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            axp.set(ylabel=None)
+            axp.axes.xaxis.set_ticklabels([])
+            axp.axes.yaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [0, 3, 6]: # x축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-20.0, 900.0)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            plt.ylabel("Generation(kWh)", fontsize=18)
+            axp.axes.xaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [10, 11]: # y축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-20.0, 900.0)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("GHI(W/m^2)", fontsize=18)
+            axp.set(ylabel=None)
+            axp.axes.yaxis.set_ticklabels([])
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
             list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
@@ -283,14 +373,14 @@ def ghi_generation_plot(user):
             ax.legend(handles, labels)
         else:
             ax = plt.subplot(4, 3, i + 1)
-            plt.subplots_adjust(hspace=0.25)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
             plt.xlim(-20.0, 900.0)
-            plt.ylim(-0.2, 3.0)
-            axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_weather_use_f, ax=ax,
-                                  palette=color_dict)
-            plt.title(f'{date_list[i]}', fontsize=15)
-            plt.xlabel("GHI(W/m^2)", fontsize=13)
-            plt.ylabel("Generation(kWh)", fontsize=13)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("GHI(W/m^2)", fontsize=18)
+            plt.ylabel("Generation(kWh)", fontsize=18)
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
             list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
@@ -327,28 +417,73 @@ def hour_consumption_plot(user):
 
     # 날짜 : 2021/4 ~ 2022/3
     date_list = df_weather_use.ym.unique().tolist()
-    date_list = date_list[1:-1]  # 2021/3, 2022/4 제외
+    date_list = date_list[1:-1] # 2021/3, 2022/4 제외
 
-    fig = plt.figure(figsize=(20, 20))
-    fig.suptitle(f'Scatter Plot between energy consumption and hour for household No.{idx} site',
-                 y=0.92, fontsize=18, fontweight='bold')
+    # 3kW 표준화
+    df_kw_type = df_weather_use.kW_type.unique().tolist()[0]
 
-    color_dict = dict({'no': 'dodgerblue', 'yes': 'red'})
+    if df_kw_type == '300W':
+        df_weather_use.grid_kWh = df_weather_use.grid_kWh * 10
+    elif df_kw_type == '6kW':
+        df_weather_use.grid_kWh = df_weather_use.grid_kWh / 2
+    elif df_kw_type == '18kW':
+        df_weather_use.grid_kWh = df_weather_use.grid_kWh / 6
+
+    sns.set(rc={'figure.figsize':(19, 20)})
+    plt.suptitle(f'Scatter Plot between energy consumption and hour for household No.{idx} site',
+                 y=0.92, fontsize=22, fontweight='bold')
+
+    color_dict = dict({'no rain': 'dodgerblue', 'rain': 'red'})
 
     for i in range(len(date_list)):
         df_weather_use_f = df_weather_use[df_weather_use.ym == date_list[i]]
 
-        if i not in [9, 10, 11]:
+        if i in [1, 2, 4, 5, 7, 8]: # x,y축 label 제거
             ax = plt.subplot(4, 3, i + 1)
-            plt.subplots_adjust(hspace=0.25)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
             plt.xlim(-1.0, 24.0)
-            plt.ylim(-0.2, 3.0)
-            axp = sns.scatterplot(x='hour', y='grid_kWh', hue='status', data=df_weather_use_f, ax=ax,
-                                  palette=color_dict)
-            plt.title(f'{date_list[i]}', fontsize=15)
-            plt.xlabel("Hour", fontsize=13)
-            plt.ylabel("Consumption(kWh)", fontsize=13)
-            plt.tick_params('x', labelbottom=False)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='hour', y='grid_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            axp.set(ylabel=None)
+            axp.axes.xaxis.set_ticklabels([])
+            axp.axes.yaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [0, 3, 6]: # x축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-1.0, 24.0)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='hour', y='grid_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            plt.ylabel("Consumption(kWh)", fontsize=18)
+            axp.axes.xaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [10, 11]: # y축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-1.0, 24.0)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='hour', y='grid_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("Hour", fontsize=18)
+            axp.set(ylabel=None)
+            axp.axes.yaxis.set_ticklabels([])
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
             list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
@@ -357,14 +492,14 @@ def hour_consumption_plot(user):
             ax.legend(handles, labels)
         else:
             ax = plt.subplot(4, 3, i + 1)
-            plt.subplots_adjust(hspace=0.25)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
             plt.xlim(-1.0, 24.0)
-            plt.ylim(-0.2, 3.0)
-            axp = sns.scatterplot(x='hour', y='grid_kWh', hue='status', data=df_weather_use_f, ax=ax,
-                                  palette=color_dict)
-            plt.title(f'{date_list[i]}', fontsize=15)
-            plt.xlabel("Hour", fontsize=13)
-            plt.ylabel("Consumption(kWh)", fontsize=13)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='hour', y='grid_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("Hour", fontsize=18)
+            plt.ylabel("Consumption(kWh)", fontsize=18)
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
             list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
@@ -402,25 +537,71 @@ def ghi_consumption_plot(user):
     date_list = df_weather_use.ym.unique().tolist()
     date_list = date_list[1:-1]  # 2021/3, 2022/4 제외
 
-    fig = plt.figure(figsize=(20, 20))
-    fig.suptitle(f'Scatter Plot between energy consumption and GHI for household No.{idx} site',
-                 y=0.92, fontsize=18, fontweight='bold')
+    # 3kW 표준화
+    df_kw_type = df_weather_use.kW_type.unique().tolist()[0]
 
-    color_dict = dict({'no': 'dodgerblue', 'yes': 'red'})
+    if df_kw_type == '300W':
+        df_weather_use.grid_kWh = df_weather_use.grid_kWh * 10
+    elif df_kw_type == '6kW':
+        df_weather_use.grid_kWh = df_weather_use.grid_kWh / 2
+    elif df_kw_type == '18kW':
+        df_weather_use.grid_kWh = df_weather_use.grid_kWh / 6
+
+    sns.set(rc={'figure.figsize':(19, 20)})
+    plt.suptitle(f'Scatter Plot between energy consumption and GHI for household No.{idx} site',
+                 y=0.92, fontsize=22, fontweight='bold')
+
+    color_dict = dict({'no rain': 'dodgerblue', 'rain': 'red'})
 
     for i in range(len(date_list)):
         df_weather_use_f = df_weather_use[df_weather_use.ym == date_list[i]]
 
-        if i not in [9, 10, 11]:
+        if i in [1, 2, 4, 5, 7, 8]:  # x,y축 label 제거
             ax = plt.subplot(4, 3, i + 1)
-            plt.subplots_adjust(hspace=0.25)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
             plt.xlim(-20.0, 900.0)
-            plt.ylim(-0.2, 3.0)
-            axp = sns.scatterplot(x='ghi', y='grid_kWh', hue='status', data=df_weather_use_f, ax=ax, palette=color_dict)
-            plt.title(f'{date_list[i]}', fontsize=15)
-            plt.xlabel("GHI(W/m^2)", fontsize=13)
-            plt.ylabel("Consumption(kWh)", fontsize=13)
-            plt.tick_params('x', labelbottom=False)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='ghi', y='grid_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            axp.set(ylabel=None)
+            axp.axes.xaxis.set_ticklabels([])
+            axp.axes.yaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [0, 3, 6]:  # x축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-20.0, 900.0)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='ghi', y='grid_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            plt.ylabel("Consumption(kWh)", fontsize=18)
+            axp.axes.xaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [10, 11]:  # y축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-20.0, 900.0)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='ghi', y='grid_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("GHI(W/m^2)", fontsize=18)
+            axp.set(ylabel=None)
+            axp.axes.yaxis.set_ticklabels([])
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
             list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
@@ -429,13 +610,14 @@ def ghi_consumption_plot(user):
             ax.legend(handles, labels)
         else:
             ax = plt.subplot(4, 3, i + 1)
-            plt.subplots_adjust(hspace=0.25)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
             plt.xlim(-20.0, 900.0)
-            plt.ylim(-0.2, 3.0)
-            axp = sns.scatterplot(x='ghi', y='grid_kWh', hue='status', data=df_weather_use_f, ax=ax, palette=color_dict)
-            plt.title(f'{date_list[i]}', fontsize=15)
-            plt.xlabel("GHI(W/m^2)", fontsize=13)
-            plt.ylabel("Consumption(kWh)", fontsize=13)
+            plt.ylim(-0.2, 3.2)
+            axp = sns.scatterplot(x='ghi', y='grid_kWh', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("GHI(W/m^2)", fontsize=18)
+            plt.ylabel("Consumption(kWh)", fontsize=18)
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
             list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
