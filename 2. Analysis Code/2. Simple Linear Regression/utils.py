@@ -636,7 +636,3 @@ def ghi_consumption_plot(user):
     plt.savefig(fig_name, dpi=300, bbox_inches="tight", pad_inches=0.2)
     print(f'{user} 데이터 : 일사량(GHI)-에너지 소비(Energy Consumption) Scatter Plot 종료')
     return
-
-if __name__ == '__main__':
-    tmp = weather_user_visibility_merge('강혜지')
-    print(tmp)
