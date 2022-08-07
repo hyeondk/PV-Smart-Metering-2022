@@ -192,7 +192,7 @@ def hour_generation_plot(user):
     elif df_kw_type == '18kW':
         df_weather_use.yield_kWh = df_weather_use.yield_kWh / 6
 
-    sns.set(rc={'figure.figsize':(19, 20)})
+    sns.set(rc={'figure.figsize':(20, 22)})
     plt.suptitle(f'Scatter Plot between solar power generation and hour for household No.{idx} site',
                  y=0.92, fontsize=22, fontweight='bold')
 
@@ -279,7 +279,7 @@ def hour_generation_plot(user):
         os.makedirs(result_user_root)
 
     fig_name = result_user_root + '/' + f'{user}_generation_hour.png'
-    plt.savefig(fig_name, dpi=300)
+    plt.savefig(fig_name, dpi=300, bbox_inches="tight", pad_inches=0.2)
     print(f'{user} 데이터 : 시간(Hour)-발전량(Solar Power Generation) Scatter Plot 종료')
     return
 
@@ -310,7 +310,7 @@ def ghi_generation_plot(user):
     elif df_kw_type == '18kW':
         df_weather_use.yield_kWh = df_weather_use.yield_kWh / 6
 
-    sns.set(rc={'figure.figsize':(19, 20)})
+    sns.set(rc={'figure.figsize':(20, 22)})
     plt.suptitle(f'Scatter Plot between solar power generation and GHI for household No.{idx} site',
                  y=0.92, fontsize=22, fontweight='bold')
 
@@ -397,7 +397,7 @@ def ghi_generation_plot(user):
         os.makedirs(result_user_root)
 
     fig_name = result_user_root + '/' + f'{user}_generation_ghi.png'
-    plt.savefig(fig_name, dpi=300)
+    plt.savefig(fig_name, dpi=300, bbox_inches="tight", pad_inches=0.2)
     print(f'{user} 데이터 : 일사량(GHI)-발전량(Solar Power Generation) Scatter Plot 종료')
     return
 
@@ -428,7 +428,7 @@ def hour_consumption_plot(user):
     elif df_kw_type == '18kW':
         df_weather_use.grid_kWh = df_weather_use.grid_kWh / 6
 
-    sns.set(rc={'figure.figsize':(19, 20)})
+    sns.set(rc={'figure.figsize':(20, 22)})
     plt.suptitle(f'Scatter Plot between energy consumption and hour for household No.{idx} site',
                  y=0.92, fontsize=22, fontweight='bold')
 
@@ -515,7 +515,7 @@ def hour_consumption_plot(user):
         os.makedirs(result_user_root)
 
     fig_name = result_user_root + '/' + f'{user}_consumption_hour.png'
-    plt.savefig(fig_name, dpi=300)
+    plt.savefig(fig_name, dpi=300, bbox_inches="tight", pad_inches=0.2)
     print(f'{user} 데이터 : 시간(Hour)-에너지 소비(Energy Consumption) Scatter Plot 종료')
     return
 
@@ -546,7 +546,7 @@ def ghi_consumption_plot(user):
     elif df_kw_type == '18kW':
         df_weather_use.grid_kWh = df_weather_use.grid_kWh / 6
 
-    sns.set(rc={'figure.figsize':(19, 20)})
+    sns.set(rc={'figure.figsize':(20, 22)})
     plt.suptitle(f'Scatter Plot between energy consumption and GHI for household No.{idx} site',
                  y=0.92, fontsize=22, fontweight='bold')
 
@@ -633,6 +633,10 @@ def ghi_consumption_plot(user):
         os.makedirs(result_user_root)
 
     fig_name = result_user_root + '/' + f'{user}_consumption_ghi.png'
-    plt.savefig(fig_name, dpi=300)
+    plt.savefig(fig_name, dpi=300, bbox_inches="tight", pad_inches=0.2)
     print(f'{user} 데이터 : 일사량(GHI)-에너지 소비(Energy Consumption) Scatter Plot 종료')
     return
+
+if __name__ == '__main__':
+    tmp = weather_user_visibility_merge('강혜지')
+    print(tmp)
