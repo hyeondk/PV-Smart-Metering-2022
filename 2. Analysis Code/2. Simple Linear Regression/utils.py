@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats
 from sklearn import linear_model
+from sklearn.metrics import mean_squared_error
 
 # 1. 파일의 상위-상위 경로 설정
 def get_project_root() -> Path:
@@ -404,7 +405,7 @@ def ghi_generation_plot(user):
             axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_user_filter, ax=ax, palette=color_dict)
             sns.lineplot(x=df_user_filter.ghi, y=y_hat, color='black', ax=ax)
             plt.title(f'{date_list[i]}', fontsize=20)
-            plt.xlabel("Hour", fontsize=18)
+            plt.xlabel("GHI(W/m^2)", fontsize=18)
             axp.set(ylabel=None)
             axp.axes.yaxis.set_ticklabels([])
             handles, labels = axp.get_legend_handles_labels()
@@ -421,7 +422,7 @@ def ghi_generation_plot(user):
             axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_user_filter, ax=ax, palette=color_dict)
             sns.lineplot(x=df_user_filter.ghi, y=y_hat, color='black', ax=ax)
             plt.title(f'{date_list[i]}', fontsize=20)
-            plt.xlabel("Hour", fontsize=18)
+            plt.xlabel("GHI(W/m^2)", fontsize=18)
             plt.ylabel("Generation(kWh)", fontsize=18)
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
@@ -679,6 +680,456 @@ def ghi_consumption_plot(user):
     print(f'{user} 데이터 : 일사량(GHI)-에너지 소비(Energy Consumption) Scatter Plot 종료')
     return
 
+# 11. Simple Linear Regression Result
+def slr_result(user):
+    print(f'{user} 데이터 : Simple Linear Regression Result 시작')
+    # 루트 설정
+    root = get_project_root()
+
+    # Merged Data 호출
+    user_folder_root = os.path.join(root, 'data_merge')
+    user_name = get_name_root()
+    idx = user_name.index(user) + 1
+    xlsx_name = user_folder_root + '\\' + f'{user}_dataset_merge.xlsx'
+    df_user = pd.read_excel(xlsx_name)
+
+    # 날짜 필터링 : 2021/4 ~ 2022/3
+    date_list = df_user.ym.unique().tolist()
+    date_list = date_list[1:-1] # 2021/3, 2022/4 제외
+
+    # 3kW 표준화
+    df_kw_type = df_user.kW_type.unique().tolist()[0]
+
+    if df_kw_type == '300W':
+        df_user.yield_kWh = df_user.yield_kWh * 10
+    elif df_kw_type == '6kW':
+        df_user.yield_kWh = df_user.yield_kWh / 2
+    elif df_kw_type == '18kW':
+        df_user.yield_kWh = df_user.yield_kWh / 6
+
+    if idx not in [16, 31, 33, 35, 43, 45]:
+        # SLR Result Dictionary
+        result = {}
+        result['date'] = [] # Date
+        result['obs_no'] = []  # data length by year/month
+        result['b0'] = []  # b0(constant)
+        result['b1'] = []  # b1(coefficient)
+        result['formula'] = []  # Formula(y = b0 + b1*x)
+        result['r2'] = []  # R-Square
+        result['corr'] = []  # Correlation Coefficient
+        result['mse'] = []  # MSE(Mean Squared Error)
+        result['generation_month'] = []  # 태양광 발전량(월별 합계)
+        result['ghi_month'] = []  # 일사량(월별 합계)
+        result['temperature_month'] = []  # 기온(월별 평균, 일사량 존재 시간대에만)
+        result['visibility_month'] = []  # 시정(월별 평균, 일사량 존재 시간대에만)
+
+        for i in range(len(date_list)):
+            # Year/Month Filtering
+            df_user_filter = df_user[df_user.ym == date_list[i]]
+            df_user_filter_2 = df_user_filter[df_user_filter.ghi != 0]
+
+            # Date
+            result['date'].append(date_list[i])
+
+            # Data Length
+            data_len = len(df_user_filter)
+            result['obs_no'].append(data_len)
+
+            # Remove NAs
+            x = df_user_filter.dropna(axis=0)[['ghi']]
+            y = df_user_filter.dropna(axis=0)[['yield_kWh']]
+
+            # Modeling #
+            # Initialization
+            lin_reg = linear_model.LinearRegression(fit_intercept=True)
+
+            # Fitting
+            lin_reg_model = lin_reg.fit(x, y)
+
+            # Predicted
+            y_predict = lin_reg_model.predict(x)
+
+            # Constant
+            b0 = round(lin_reg_model.intercept_[0], 5)
+            result['b0'].append(b0)
+
+            # Coefficient
+            b1 = round(lin_reg_model.coef_.tolist()[0][0], 5)
+            result['b1'].append(b1)
+
+            # Formula
+            formula = f'y = {b0} + {b1}*x'
+            result['formula'].append(formula)
+
+            # R-Square
+            r2 = round(lin_reg_model.score(x, y), 3)
+            result['r2'].append(r2)
+
+            # Correlation Coefficient
+            r = round(np.sqrt(r2), 3)
+            result['corr'].append(r)
+
+            # MSE
+            mse = mean_squared_error(y, y_predict)
+            result['mse'].append(mse)
+
+            # 태양광 발전량(월별 합계)
+            solar_gen = np.sum(df_user_filter.yield_kWh)
+            solar_gen = round(solar_gen, 5)
+            result['generation_month'].append(solar_gen)
+
+            # 일사량(월별 합계)
+            m_ghi = np.sum(df_user_filter.ghi)
+            m_ghi = round(m_ghi, 5)
+            result['ghi_month'].append(m_ghi)
+
+            # 기온(월별 평균, 일사량 존재 시간대에만)
+            m_temp = np.mean(df_user_filter_2.temperature)
+            m_temp = round(m_temp, 5)
+            result['temperature_month'].append(m_temp)
+
+            # 시정(월별 평균, 일사량 존재 시간대에만)
+            m_vis = np.mean(df_user_filter_2.visibility)
+            m_vis = round(m_vis, 5)
+            result['visibility_month'].append(m_vis)
+
+        final_result = pd.DataFrame(result)
+    elif idx == 35:
+        # SLR Result Dictionary
+        result = {}
+        result['date'] = [] # Date
+        result['obs_no'] = []  # data length by year/month
+        result['b0'] = []  # b0(constant)
+        result['b1'] = []  # b1(coefficient)
+        result['formula'] = []  # Formula(y = b0 + b1*x)
+        result['r2'] = []  # R-Square
+        result['corr'] = []  # Correlation Coefficient
+        result['mse'] = []  # MSE(Mean Squared Error)
+        result['generation_month'] = []  # 태양광 발전량(월별 합계)
+        result['ghi_month'] = []  # 일사량(월별 합계)
+        result['temperature_month'] = []  # 기온(월별 평균, 일사량 존재 시간대에만)
+        result['visibility_month'] = []  # 시정(월별 평균, 일사량 존재 시간대에만)
+
+        for i in range(len(date_list)):
+            # Year/Month Filtering
+            df_user_filter = df_user[df_user.ym == date_list[i]]
+            df_user_filter = df_user_filter.drop('export_kWh', axis=1)
+            df_user_filter_2 = df_user_filter[df_user_filter.ghi != 0]
+
+            # Date
+            result['date'].append(date_list[i])
+
+            # Data Length
+            data_len = len(df_user_filter)
+            result['obs_no'].append(data_len)
+
+            # Remove NAs
+            x = df_user_filter.dropna(axis=0)[['ghi']]
+            y = df_user_filter.dropna(axis=0)[['yield_kWh']]
+
+            # Modeling #
+            # Initialization
+            lin_reg = linear_model.LinearRegression(fit_intercept=True)
+
+            # Fitting
+            lin_reg_model = lin_reg.fit(x, y)
+
+            # Predicted
+            y_predict = lin_reg_model.predict(x)
+
+            # Constant
+            b0 = round(lin_reg_model.intercept_[0], 5)
+            result['b0'].append(b0)
+
+            # Coefficient
+            b1 = round(lin_reg_model.coef_.tolist()[0][0], 5)
+            result['b1'].append(b1)
+
+            # Formula
+            formula = f'y = {b0} + {b1}*x'
+            result['formula'].append(formula)
+
+            # R-Square
+            r2 = round(lin_reg_model.score(x, y), 3)
+            result['r2'].append(r2)
+
+            # Correlation Coefficient
+            r = round(np.sqrt(r2), 3)
+            result['corr'].append(r)
+
+            # MSE
+            mse = mean_squared_error(y, y_predict)
+            result['mse'].append(mse)
+
+            # 태양광 발전량(월별 합계)
+            solar_gen = np.sum(df_user_filter.yield_kWh)
+            solar_gen = round(solar_gen, 5)
+            result['generation_month'].append(solar_gen)
+
+            # 일사량(월별 합계)
+            m_ghi = np.sum(df_user_filter.ghi)
+            m_ghi = round(m_ghi, 5)
+            result['ghi_month'].append(m_ghi)
+
+            # 기온(월별 평균, 일사량 존재 시간대에만)
+            m_temp = np.mean(df_user_filter_2.temperature)
+            m_temp = round(m_temp, 5)
+            result['temperature_month'].append(m_temp)
+
+            # 시정(월별 평균, 일사량 존재 시간대에만)
+            m_vis = np.mean(df_user_filter_2.visibility)
+            m_vis = round(m_vis, 5)
+            result['visibility_month'].append(m_vis)
+
+        final_result = pd.DataFrame(result)
+    elif idx == 45:
+        # SLR Result Dictionary
+        result = {}
+        result['date'] = [] # Date
+        result['obs_no'] = [] # data length by year/month
+        result['b0'] = [] # b0(constant)
+        result['b1'] = [] # b1(coefficient)
+        result['formula'] = [] # Formula(y = b0 + b1*x)
+        result['r2'] = [] # R-Square
+        result['corr'] = [] # Correlation Coefficient
+        result['mse'] = [] # MSE(Mean Squared Error)
+        result['generation_month'] = []  # 태양광 발전량(월별 합계)
+        result['ghi_month'] = []  # 일사량(월별 합계)
+        result['temperature_month'] = []  # 기온(월별 평균, 일사량 존재 시간대에만)
+        result['visibility_month'] = []  # 시정(월별 평균, 일사량 존재 시간대에만)
+
+        for i in range(len(date_list)):
+            if i in [0, 1, 2, 3, 4, 5]:
+                # Year/Month Filtering
+                df_user_filter = df_user[df_user.ym == date_list[i]]
+                df_user_filter_2 = df_user_filter[df_user_filter.ghi != 0]
+
+                # Date
+                result['date'].append(date_list[i])
+
+                # Data Length
+                data_len = len(df_user_filter)
+                result['obs_no'].append(data_len)
+
+                # Remove NAs
+                x = df_user_filter.dropna(axis=0)[['ghi']]
+                y = df_user_filter.dropna(axis=0)[['yield_kWh']]
+
+                # # Modeling #
+                # # Initialization
+                # lin_reg = linear_model.LinearRegression(fit_intercept=True)
+                #
+                # # Fitting
+                # lin_reg_model = lin_reg.fit(x, y)
+                #
+                # # Predicted
+                # y_predict = lin_reg_model.predict(x)
+
+                # Constant
+                b0 = np.nan
+                result['b0'].append(b0)
+
+                # Coefficient
+                b1 = np.nan
+                result['b1'].append(b1)
+
+                # Formula
+                formula = np.nan
+                result['formula'].append(formula)
+
+                # R-Square
+                r2 = np.nan
+                result['r2'].append(r2)
+
+                # Correlation Coefficient
+                r = np.nan
+                result['corr'].append(r)
+
+                # MSE
+                mse = np.nan
+                result['mse'].append(mse)
+
+                # 태양광 발전량(월별 합계)
+                solar_gen = np.sum(df_user_filter.yield_kWh)
+                solar_gen = round(solar_gen, 5)
+                result['generation_month'].append(solar_gen)
+
+                # 일사량(월별 합계)
+                m_ghi = np.sum(df_user_filter.ghi)
+                m_ghi = round(m_ghi, 5)
+                result['ghi_month'].append(m_ghi)
+
+                # 기온(월별 평균, 일사량 존재 시간대에만)
+                m_temp = np.mean(df_user_filter_2.temperature)
+                m_temp = round(m_temp, 5)
+                result['temperature_month'].append(m_temp)
+
+                # 시정(월별 평균, 일사량 존재 시간대에만)
+                m_vis = np.mean(df_user_filter_2.visibility)
+                m_vis = round(m_vis, 5)
+                result['visibility_month'].append(m_vis)
+            else:
+                # Year/Month Filtering
+                df_user_filter = df_user[df_user.ym == date_list[i]]
+                df_user_filter_2 = df_user_filter[df_user_filter.ghi != 0]
+
+                # Date
+                result['date'].append(date_list[i])
+
+                # Data Length
+                data_len = len(df_user_filter)
+                result['obs_no'].append(data_len)
+
+                # Remove NAs
+                x = df_user_filter.dropna(axis=0)[['ghi']]
+                y = df_user_filter.dropna(axis=0)[['yield_kWh']]
+
+                # Modeling #
+                # Initialization
+                lin_reg = linear_model.LinearRegression(fit_intercept=True)
+
+                # Fitting
+                lin_reg_model = lin_reg.fit(x, y)
+
+                # Predicted
+                y_predict = lin_reg_model.predict(x)
+
+                # Constant
+                b0 = round(lin_reg_model.intercept_[0], 5)
+                result['b0'].append(b0)
+
+                # Coefficient
+                b1 = round(lin_reg_model.coef_.tolist()[0][0], 5)
+                result['b1'].append(b1)
+
+                # Formula
+                formula = f'y = {b0} + {b1}*x'
+                result['formula'].append(formula)
+
+                # R-Square
+                r2 = round(lin_reg_model.score(x, y), 3)
+                result['r2'].append(r2)
+
+                # Correlation Coefficient
+                r = round(np.sqrt(r2), 3)
+                result['corr'].append(r)
+
+                # MSE
+                mse = mean_squared_error(y, y_predict)
+                result['mse'].append(mse)
+
+                # 태양광 발전량(월별 합계)
+                solar_gen = np.sum(df_user_filter.yield_kWh)
+                solar_gen = round(solar_gen, 5)
+                result['generation_month'].append(solar_gen)
+
+                # 일사량(월별 합계)
+                m_ghi = np.sum(df_user_filter.ghi)
+                m_ghi = round(m_ghi, 5)
+                result['ghi_month'].append(m_ghi)
+
+                # 기온(월별 평균, 일사량 존재 시간대에만)
+                m_temp = np.mean(df_user_filter_2.temperature)
+                m_temp = round(m_temp, 5)
+                result['temperature_month'].append(m_temp)
+
+                # 시정(월별 평균, 일사량 존재 시간대에만)
+                m_vis = np.mean(df_user_filter_2.visibility)
+                m_vis = round(m_vis, 5)
+                result['visibility_month'].append(m_vis)
+
+        final_result = pd.DataFrame(result)
+    elif idx in [16, 31, 33, 43]:
+        # SLR Result Dictionary
+        result = {}
+        result['date'] = [] # Date
+        result['obs_no'] = [] # data length by year/month
+        result['b0'] = [] # b0(constant)
+        result['b1'] = [] # b1(coefficient)
+        result['formula'] = [] # Formula(y = b0 + b1*x)
+        result['r2'] = [] # R-Square
+        result['corr'] = [] # Correlation Coefficient
+        result['mse'] = [] # MSE(Mean Squared Error)
+        result['generation_month'] = []  # 태양광 발전량(월별 합계)
+        result['ghi_month'] = []  # 일사량(월별 합계)
+        result['temperature_month'] = []  # 기온(월별 평균, 일사량 존재 시간대에만)
+        result['visibility_month'] = []  # 시정(월별 평균, 일사량 존재 시간대에만)
+
+        for i in range(len(date_list)):
+            # Year/Month Filtering
+            df_user_filter = df_user[df_user.ym == date_list[i]]
+            df_user_filter_2 = df_user_filter[df_user_filter.ghi != 0]
+
+            # Date
+            result['date'].append(date_list[i])
+
+            # Data Length
+            data_len = len(df_user_filter)
+            result['obs_no'].append(data_len)
+
+            # Remove NAs
+            x = df_user_filter.dropna(axis=0)[['ghi']]
+            y = df_user_filter.dropna(axis=0)[['yield_kWh']]
+
+            # # Modeling #
+            # # Initialization
+            # lin_reg = linear_model.LinearRegression(fit_intercept=True)
+            #
+            # # Fitting
+            # lin_reg_model = lin_reg.fit(x, y)
+            #
+            # # Predicted
+            # y_predict = lin_reg_model.predict(x)
+
+            # Constant
+            b0 = np.nan
+            result['b0'].append(b0)
+
+            # Coefficient
+            b1 = np.nan
+            result['b1'].append(b1)
+
+            # Formula
+            formula = np.nan
+            result['formula'].append(formula)
+
+            # R-Square
+            r2 = np.nan
+            result['r2'].append(r2)
+
+            # Correlation Coefficient
+            r = np.nan
+            result['corr'].append(r)
+
+            # MSE
+            mse = np.nan
+            result['mse'].append(mse)
+
+            # 태양광 발전량(월별 합계)
+            solar_gen = np.sum(df_user_filter.yield_kWh)
+            solar_gen = round(solar_gen, 5)
+            result['generation_month'].append(solar_gen)
+
+            # 일사량(월별 합계)
+            m_ghi = np.sum(df_user_filter.ghi)
+            m_ghi = round(m_ghi, 5)
+            result['ghi_month'].append(m_ghi)
+
+            # 기온(월별 평균, 일사량 존재 시간대에만)
+            m_temp = np.mean(df_user_filter_2.temperature)
+            m_temp = round(m_temp, 5)
+            result['temperature_month'].append(m_temp)
+
+            # 시정(월별 평균, 일사량 존재 시간대에만)
+            m_vis = np.mean(df_user_filter_2.visibility)
+            m_vis = round(m_vis, 5)
+            result['visibility_month'].append(m_vis)
+
+        final_result = pd.DataFrame(result)
+
+    print(f'{user} 데이터 : Simple Linear Regression Result 종료')
+    return final_result
+
 ##### Special Case #####
 
 # S1. Scatter Plot : 일사량(GHI) - 발전량(Solar Power Generation) with Simple Linear Regression
@@ -802,7 +1253,7 @@ def ghi_generation_plot_special(user):
             axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_user_filter, ax=ax, palette=color_dict)
             sns.lineplot(x=df_user_filter.ghi, y=y_hat, color='black', ax=ax)
             plt.title(f'{date_list[i]}', fontsize=20)
-            plt.xlabel("Hour", fontsize=18)
+            plt.xlabel("GHI(W/m^2)", fontsize=18)
             axp.set(ylabel=None)
             axp.axes.yaxis.set_ticklabels([])
             handles, labels = axp.get_legend_handles_labels()
@@ -819,7 +1270,7 @@ def ghi_generation_plot_special(user):
             axp = sns.scatterplot(x='ghi', y='yield_kWh', hue='status', data=df_user_filter, ax=ax, palette=color_dict)
             sns.lineplot(x=df_user_filter.ghi, y=y_hat, color='black', ax=ax)
             plt.title(f'{date_list[i]}', fontsize=20)
-            plt.xlabel("Hour", fontsize=18)
+            plt.xlabel("GHI(W/m^2)", fontsize=18)
             plt.ylabel("Generation(kWh)", fontsize=18)
             handles, labels = axp.get_legend_handles_labels()
             list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
@@ -1000,7 +1451,7 @@ def ghi_generation_plot_special2(user):
                                       palette=color_dict)
                 sns.lineplot(x=df_user_filter.ghi, y=y_hat, color='black', ax=ax)
                 plt.title(f'{date_list[i]}', fontsize=20)
-                plt.xlabel("Hour", fontsize=18)
+                plt.xlabel("GHI(W/m^2)", fontsize=18)
                 axp.set(ylabel=None)
                 axp.axes.yaxis.set_ticklabels([])
                 handles, labels = axp.get_legend_handles_labels()
@@ -1018,7 +1469,7 @@ def ghi_generation_plot_special2(user):
                                       palette=color_dict)
                 sns.lineplot(x=df_user_filter.ghi, y=y_hat, color='black', ax=ax)
                 plt.title(f'{date_list[i]}', fontsize=20)
-                plt.xlabel("Hour", fontsize=18)
+                plt.xlabel("GHI(W/m^2)", fontsize=18)
                 plt.ylabel("Generation(kWh)", fontsize=18)
                 handles, labels = axp.get_legend_handles_labels()
                 list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
