@@ -1,6 +1,6 @@
 ### Code : Function Utils
 ### Writer : Donghyeon Kim
-### Date : 2022.08.08
+### Date : 2022.08.10
 
 # 0. 라이브러리 설정
 from pathlib import Path
@@ -1129,6 +1129,114 @@ def slr_result(user):
 
     print(f'{user} 데이터 : Simple Linear Regression Result 종료')
     return final_result
+
+# 12. Scatter Plot : 시간(Hour) - 일사량(GHI)
+def hour_ghi_plot(user):
+    print(f'{user} 데이터 : 시간(Hour)-일사량(GHI) Scatter Plot 시작')
+    # 루트 설정
+    root = get_project_root()
+
+    # 결합된 데이터 호출
+    df_weather_use = weather_user_merge(user)
+
+    # 사용자 index 추출
+    user_name = get_name_root()
+    idx = user_name.index(user) + 1
+
+    # 날짜 : 2021/4 ~ 2022/3
+    date_list = df_weather_use.ym.unique().tolist()
+    date_list = date_list[1:-1] # 2021/3, 2022/4 제외
+
+    sns.set(rc={'figure.figsize':(20, 24)})
+    plt.suptitle(f'Scatter Plot between GHI and hour for household No.{idx} site',
+                 y=0.92, fontsize=22, fontweight='bold')
+
+    color_dict = dict({'no rain': 'dodgerblue', 'rain': 'red'})
+
+    for i in range(len(date_list)):
+        df_weather_use_f = df_weather_use[df_weather_use.ym == date_list[i]]
+
+        if i in [1, 2, 4, 5, 7, 8]: # x,y축 label 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-1.0, 24.0)
+            plt.ylim(-20.0, 950.0)
+            axp = sns.scatterplot(x='hour', y='ghi', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            axp.set(ylabel=None)
+            axp.axes.xaxis.set_ticklabels([])
+            axp.axes.yaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [0, 3, 6]: # x축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-1.0, 24.0)
+            plt.ylim(-20.0, 950.0)
+            axp = sns.scatterplot(x='hour', y='ghi', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            axp.set(xlabel=None)
+            plt.ylabel("GHI(W/m^2)", fontsize=18)
+            axp.axes.xaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        elif i in [10, 11]: # y축 label만 제거
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-1.0, 24.0)
+            plt.ylim(-20.0, 950.0)
+            axp = sns.scatterplot(x='hour', y='ghi', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("Hour", fontsize=18)
+            axp.set(ylabel=None)
+            axp.axes.yaxis.set_ticklabels([])
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+        else:
+            ax = plt.subplot(4, 3, i + 1)
+            plt.subplots_adjust(wspace=0.1, hspace=0.2)
+            plt.xlim(-1.0, 24.0)
+            plt.ylim(-20.0, 950.0)
+            axp = sns.scatterplot(x='hour', y='ghi', hue='status', data=df_weather_use_f,
+                                  ax=ax, palette=color_dict)
+            plt.title(f'{date_list[i]}', fontsize=20)
+            plt.xlabel("Hour", fontsize=18)
+            plt.ylabel("GHI(W/m^2)", fontsize=18)
+            handles, labels = axp.get_legend_handles_labels()
+            list_labels_handles = [(h, v) for h, v in zip(handles, labels)]
+            list_labels_handles = sorted(list_labels_handles, key=lambda x: x[1])
+            labels = [x[1] for x in list_labels_handles]
+            handles = [x[0] for x in list_labels_handles]
+            ax.legend(handles, labels)
+
+    result_root = os.path.join(root, 'result_plot_use')
+    if not os.path.isdir(result_root):
+        os.makedirs(result_root)
+
+    result_user_root = os.path.join(result_root, f'{user}')
+    if not os.path.isdir(result_user_root):
+        os.makedirs(result_user_root)
+
+    fig_name = result_user_root + '/' + f'{user}_ghi_hour.png'
+    plt.savefig(fig_name, dpi=300, bbox_inches="tight", pad_inches=0.2)
+    print(f'{user} 데이터 : 시간(Hour)-일사량(GHI) Scatter Plot 종료')
+    return
 
 ##### Special Case #####
 
