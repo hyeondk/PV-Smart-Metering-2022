@@ -59,8 +59,8 @@ def get_value_on_use_df():
         data_time['day'] = []  # 일
         data_time['hour'] = []  # 시간
         data_time['그리드 소비(kWh)'] = []  # 전력 소비량
-        data_time['수출 된 에너지(kWh)'] = []  # 전력 생산량
-        data_time['에너지 수율(kWh)'] = []  # 전력 수출량
+        data_time['수출 된 에너지(kWh)'] = []  # 전력 수출량
+        data_time['에너지 수율(kWh)'] = []  # 전력 생산량
         update = 0
 
         if user_name[i] == '윤OO': # 윤OO data일 경우 본 코드 실행하지 않음.
@@ -188,8 +188,8 @@ def get_value_on_not_df():
         data_time['day'] = []  # 일
         data_time['hour'] = []  # 시간
         data_time['그리드 소비(kWh)'] = []  # 전력 소비량
-        data_time['수출 된 에너지(kWh)'] = []  # 전력 생산량
-        # data_time['에너지 수율(kWh)'] = []  # 전력 수출량
+        data_time['수출 된 에너지(kWh)'] = []  # 전력 수출량
+        # data_time['에너지 수율(kWh)'] = []  # 전력 생산량
         update = 0
 
         if user_name[i] == '윤OO':  # 윤OO data일 경우 본 코드 실행하지 않음.
@@ -318,8 +318,8 @@ def get_value_on_use_df_special():
         data_time['day'] = []  # 일
         data_time['hour'] = []  # 시간
         data_time['그리드 소비(kWh)'] = []  # 전력 소비량
-        data_time['수출 된 에너지(kWh)'] = []  # 전력 생산량
-        data_time['에너지 수율(kWh)'] = []  # 전력 수출량
+        data_time['수출 된 에너지(kWh)'] = []  # 전력 수출량
+        data_time['에너지 수율(kWh)'] = []  # 전력 생산량
         update = 0
 
         if user_name[i] != '윤OO': # 윤OO data가 아닐 경우 코드 실행하지 않음.
