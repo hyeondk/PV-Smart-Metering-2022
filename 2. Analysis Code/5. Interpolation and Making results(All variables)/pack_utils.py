@@ -25,11 +25,23 @@ def get_name_root_use():
                  '이OO', '임OO', '조OO', '최OO', '최OO']
     return name_list
 
+# 3-2. 태양광 사용자 이름(단독주택 한정)
+def get_name_root_use2():
+    name_list = ['김OO', '서OO', '송OO', '오OO', '이OO',
+                 '이OO', '임OO', '조OO', '최OO', '최OO']
+    return name_list
+
 # 4. 태양광 미사용자 이름 획득
 def get_name_root_not():
     name_list = ['강OO', '고OO', '고OO', '구OO', '김OO', '김OO', '김OO', '명OO', '문OO', '박OO',
                  '박OO', '박OO', '박OO', '백OO', '손OO', '양OO', '양OO', '양OO', '윤OO', '이OO',
                  '이OO', '이OO', '이OO', '최OO', '최OO']
+    return name_list
+
+# 4-2. 태양광 미사용자 이름(단독주택 한정)
+def get_name_root_not2():
+    name_list = ['고OO', '고OO', '구OO', '김OO', '김OO', '김OO', '문OO', '박OO', '박OO',
+                 '손OO', '양OO', '양OO', '양OO', '윤OO', '이OO', '이OO', '이OO', '최OO']
     return name_list
 
 # 5. 설비용량(kW) Dictionary
