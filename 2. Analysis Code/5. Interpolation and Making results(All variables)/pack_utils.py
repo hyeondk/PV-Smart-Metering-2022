@@ -4,9 +4,6 @@
 # 0. 라이브러리 설정
 from pathlib import Path
 import os
-import pandas as pd
-import numpy as np
-import openpyxl
 
 # 1. 파일의 상위-상위 경로 설정
 def get_project_root() -> Path:
