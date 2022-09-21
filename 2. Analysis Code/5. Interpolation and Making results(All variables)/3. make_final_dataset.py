@@ -16,6 +16,7 @@ import openpyxl
 # get_name_root_not : 태양광 미사용자 이름 호출
 from pack_utils import get_project_root, get_name_root, get_name_root_use, get_name_root_not, kw_dict, kw_value_dict
 from pack_utils import get_name_root_use2, get_name_root_not2
+from pack_utils import get_name_root_use3
 
 ## 태양광 설치 가구 ##
 # 1. 1시간 단위 dataset
@@ -649,10 +650,63 @@ def filter_data_day():
     print('1일 단위 데이터 : 필터링 종료')
     return
 
+## 태양광 : 3kW 한정 ##
+def filter_data_hour2():
+    print('1시간 단위 데이터 : 필터링 시작')
+    root = get_project_root()
+    df_result = pd.DataFrame()
+
+    folder_root = os.path.join(root, 'data_merge_wt_f')
+    solar_use = get_name_root_use3()
+    solar_not = get_name_root_not2()
+
+    data_hour = os.path.join(folder_root, 'all_concat_hour2.xlsx')
+    file_hour = pd.read_excel(data_hour)
+
+    for i in range(len(solar_use)):
+        df_user = file_hour[file_hour.owner == solar_use[i]]
+        df_result = pd.concat([df_result, df_user])
+
+    for j in range(len(solar_not)):
+        df_user2 = file_hour[file_hour.owner == solar_not[j]]
+        df_result = pd.concat([df_result, df_user2])
+
+    # 결과물 저장
+    xlsx_name = folder_root + '\\' + 'all_concat_hour_3kw.xlsx'
+    df_result.to_excel(xlsx_name, sheet_name='concat', index=False)
+    print('1시간 단위 데이터 : 필터링 종료')
+    return
+
+def filter_data_day2():
+    print('1일 단위 데이터 : 필터링 시작')
+    root = get_project_root()
+    df_result = pd.DataFrame()
+
+    folder_root = os.path.join(root, 'data_merge_wt_f')
+    solar_use = get_name_root_use3()
+    solar_not = get_name_root_not2()
+
+    data_day = os.path.join(folder_root, 'all_concat_day2.xlsx')
+    file_day = pd.read_excel(data_day)
+
+    for i in range(len(solar_use)):
+        df_user = file_day[file_day.owner == solar_use[i]]
+        df_result = pd.concat([df_result, df_user])
+
+    for j in range(len(solar_not)):
+        df_user2 = file_day[file_day.owner == solar_not[j]]
+        df_result = pd.concat([df_result, df_user2])
+
+    # 결과물 저장
+    xlsx_name = folder_root + '\\' + 'all_concat_day_3kw.xlsx'
+    df_result.to_excel(xlsx_name, sheet_name='concat', index=False)
+    print('1일 단위 데이터 : 필터링 종료')
+    return
+
 # 실행부
 if __name__ == '__main__':
-    tmp = filter_data_hour()
+    tmp = filter_data_hour2()
     print(tmp)
 
-    tmp2 = filter_data_day()
+    tmp2 = filter_data_day2()
     print(tmp2)
