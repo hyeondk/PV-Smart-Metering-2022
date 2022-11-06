@@ -1,5 +1,6 @@
 ### Code : Function Utils
 ### Writer : Donghyeon Kim
+### Update : 2022.11.06
 
 # 0. 라이브러리 설정
 from pathlib import Path
@@ -76,3 +77,35 @@ def kw_value_dict(user):
                 '최OO': 18}
     item = use_dict.get(user)
     return item
+
+###########################################
+
+# 사용자 최종 정리 #
+
+# 1. 태양광 사용자 최종 이름
+# 모두 단독주택이라는 공통점이 있음.
+def get_name_use_final():
+    name_list = ['김OO', '서OO', '송OO', '오OO', '이OO',
+                 '이OO', '임OO', '조OO', '최OO', '최OO', '윤OO']
+    return name_list
+
+# 2. 태양광 사용자 최종 이름 중 3kW
+def get_name_use_final_3kw():
+    name_list = ['김OO', '서OO', '송OO', '오OO', '이OO',
+                 '임OO', '조OO', '최OO', '윤OO']
+    return name_list
+
+# 3. 태양광 미사용자 최종 이름
+# kW 구분은 없으나, 주택 형태는 다양함.
+def get_name_not_final():
+    name_list = ['강OO', '고OO', '고OO', '구OO', '김OO', '김OO', '김OO', '명OO', '문OO', '박OO',
+                 '박OO', '박OO', '박OO', '백OO', '손OO', '양OO', '양OO', '양OO', '윤OO', '이OO',
+                 '이OO', '이OO', '이OO', '최OO', '최OO']
+    return name_list
+
+# 4. 태양광 미사용자 최종 이름 중 단독주택
+# 4-2. 태양광 미사용자 이름(단독주택 한정)
+def get_name_not_final_detach():
+    name_list = ['고OO', '고OO', '구OO', '김OO', '김OO', '김OO', '문OO', '박OO', '박OO',
+                 '손OO', '양OO', '양OO', '양OO', '윤OO', '이OO', '이OO', '이OO', '최OO']
+    return name_list
