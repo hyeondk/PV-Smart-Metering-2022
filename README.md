@@ -1,7 +1,7 @@
 # **PV-Smart-Metering-2022**
 * Type : Research Project
 * Title : An Analysis of Electricity Generation and Consumption Characteristics of Solar Installation Households in Housing
-* Periods : 2022.01.01. ~ 2022.12.31.(Currently in progress)
+* Periods : 2022.01.01. ~ 2022.12.31.
 
 ## **Research Purpose**
 * Analysis of photovoltaic power generation and household power consumption characteristics for housing use as basic data for future policies and research
