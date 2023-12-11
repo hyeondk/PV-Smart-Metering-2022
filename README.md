@@ -5,14 +5,13 @@
 
 ## **Research Purpose**
 * Analysis of photovoltaic power generation and household power consumption characteristics for housing use as basic data for future policies and research
-1. Analysis of Solar Management and Power Generation Status for Residential Use
-2. Identify the characteristics of photovoltaic power generation for residential use and the impact of expansion of distribution
-3. Analysis of Power Consumption Characteristics and Self-Consumption of Solar Installation Households Compared to General Households
 
 ## **My Analysis Contents**
-* Analysis of Solar Power Generation Patterns and Model Construction
-1. Time Series Generation Fundamental Pattern Analysis
-2. A Study on the Prediction Model of Solar Power Generation for Housing
+* Solar Pattern Analysis and Model Settings
+1. Application of calibration by Interpolation Method for missing values
+2. Identifying the Characteristics of Power Consumption and Self-Consumption of Solar Installation Households
+3. Analysis of OLS between climate factors such as temperature, solar radiation, and humidity and solar power generation
+4. Data Visualization
 
 ## **Notes**
 1. Data contains personal information and cannot be disclosed.
